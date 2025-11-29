@@ -1,40 +1,21 @@
-name: CI - SAST & DAST
+name: SAST-SonarQube
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
 
 jobs:
-  security-test:
+  sonarqube:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout source code
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      # =======================
-      #  SAST - SonarQube Scan
-      # =======================
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@v2
         with:
-          projectBaseDir: .
           args: >
             -Dsonar.projectKey=antrian
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
+            -Dsonar.sources=.
+            -Dsonar.host.url=https://crowned-unsplendid-alicia.ngrok-free.dev
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-
-      # =======================
-      #  DAST - OWASP ZAP
-      # =======================
-      - name: Run ZAP Baseline Scan
-        run: |
-          docker run -v $(pwd):/zap/wrk/:rw --network="host" \
-          ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
-          -t http://localhost/antrian -r zap_report.html || true
-
-      - name: Upload ZAP Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: zap-report
-          path: zap_report.html
