@@ -8,6 +8,7 @@ on:
     branches: [ "main" ]
 
 jobs:
+
   # ===================================================
   # 1. SAST - Static Analysis Security Testing (SonarCloud)
   # ===================================================
@@ -31,27 +32,32 @@ jobs:
             -Dsonar.organization=cytcytcuit
             -Dsonar.projectKey=cytcytcuit_antrian-devsecops
 
+
   # ===================================================
   # 2. DAST - Dynamic Analysis Security Testing (OWASP ZAP)
   # ===================================================
   DAST-ZAP:
-    name: 🌐 DAST Scan (OWASP ZAP)
+    name: 🌐 DAST Scan (OWASP ZAP Baseline)
     runs-on: ubuntu-latest
     needs: SAST-SonarCloud
 
     steps:
+      # ---- Check out repository
       - name: Checkout source code
         uses: actions/checkout@v4
 
+      # ---- Run OWASP ZAP Baseline Scan
+      # FIX utama: gunakan cmd_options untuk memastikan file zap_report.html dihasilkan
       - name: Run ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.10.0
         with:
           target: ${{ secrets.ZAP_TARGET_URL }}
-          cmd_options: "-a -r zap_report.html"
+          cmd_options: "-a -r zap_report.html"   # <- FIX !!!
 
-      - name: Upload ZAP Report
+      # ---- Upload report ke GitHub artifacts
+      - name: Upload ZAP Report Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ZAP-DAST-Report
-          path: zap_report.html
-          retention-days: 5
+          path: zap_report.html                 # <- FIX !!!
+          retention-days: 7
