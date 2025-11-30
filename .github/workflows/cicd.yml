@@ -44,12 +44,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run ZAP Baseline Scan
-        env:
-          ZAP_TARGET_URL: ${{ secrets.ZAP_TARGET_URL }}
-        run: |
-          echo "Starting DAST scan on target: $ZAP_TARGET_URL"
-          docker run -t ghcr.io/zaproxy/zaproxy:stable \
-          zap-baseline.py -t $ZAP_TARGET_URL -r zap_report.html
+        uses: zaproxy/action-baseline@v0.7.0
+        with:
+          target: ${{ secrets.ZAP_TARGET_URL }}
+          cmd_options: "-a -r zap_report.html"
 
       - name: Upload ZAP Report
         uses: actions/upload-artifact@v4
@@ -57,4 +55,3 @@ jobs:
           name: ZAP-DAST-Report
           path: zap_report.html
           retention-days: 5
-          
