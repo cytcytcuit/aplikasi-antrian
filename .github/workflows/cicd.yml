@@ -30,10 +30,8 @@ jobs:
           args: >
             -Dsonar.organization=cytcytcuit
             -Dsonar.projectKey=cytcytcuit_antrian-devsecops
-            # 👇 PERBAIKAN: Kecualikan file laporan dari deteksi duplikasi (CPD = Copy/Paste Detection)
             -Dsonar.cpd.exclusions=**/zap_report.html 
-            # (Opsional) Anda juga bisa mengecualikan semua file HTML jika ada laporan lain:
-            # -Dsonar.cpd.exclusions=**/*.html       
+            
 
   # ===================================================
   # 2. DAST - Dynamic Analysis Security Testing (OWASP ZAP)
