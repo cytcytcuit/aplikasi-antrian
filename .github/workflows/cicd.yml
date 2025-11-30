@@ -1,5 +1,10 @@
 name: CI/CD DevSecOps (SAST & DAST)
 
+permissions:
+  contents: write
+  actions: write
+  security-events: write
+
 on:
   push:
     branches: [ "main" ]
@@ -9,9 +14,6 @@ on:
 
 jobs:
 
-  # ===================================================
-  # 1. SAST - Static Analysis (SonarCloud)
-  # ===================================================
   SAST-SonarCloud:
     name: 🛡️ SAST Scan (SonarCloud)
     runs-on: ubuntu-latest
@@ -33,9 +35,6 @@ jobs:
             -Dsonar.projectKey=cytcytcuit_antrian-devsecops
 
 
-  # ===================================================
-  # 2. DAST - OWASP ZAP Baseline Scan
-  # ===================================================
   DAST-ZAP:
     name: 🌐 DAST Scan (OWASP ZAP Baseline)
     runs-on: ubuntu-latest
@@ -50,4 +49,4 @@ jobs:
         with:
           target: ${{ secrets.ZAP_TARGET_URL }}
           cmd_options: "-a"
-          artifact_name: "ZAP-Report"    # ← otomatis upload zap_report.html
+          artifact_name: "ZAP-DAST-Result"  # ← Otomatis upload
