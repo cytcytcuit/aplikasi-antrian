@@ -1,21 +1,59 @@
-name: SAST-SonarQube
+name: CI/CD DevSecOps (SAST & DAST)
 
 on:
   push:
     branches: [ "main" ]
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+    branches: [ "main" ]
 
 jobs:
-  sonarqube:
+  # ===================================================
+  # 1. SAST - Static Analysis Security Testing (SonarCloud)
+  # ===================================================
+  SAST-SonarCloud:
+    name: 🛡️ SAST Scan (SonarCloud)
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
 
-      - name: SonarQube Scan
-        uses: sonarsource/sonarqube-scan-action@v2
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: SonarCloud Analysis
+        uses: SonarSource/sonarcloud-github-action@v2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           args: >
-            -Dsonar.projectKey=antrian
-            -Dsonar.sources=.
-            -Dsonar.host.url=https://crowned-unsplendid-alicia.ngrok-free.dev
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+            -Dsonar.organization=cytcytcuit
+            -Dsonar.projectKey=cytcytcuit_antrian-devsecops
+
+  # ===================================================
+  # 2. DAST - Dynamic Analysis Security Testing (OWASP ZAP)
+  # ===================================================
+  DAST-ZAP:
+    name: 🌐 DAST Scan (OWASP ZAP)
+    runs-on: ubuntu-latest
+    needs: SAST-SonarCloud
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Run ZAP Baseline Scan
+        env:
+          ZAP_TARGET_URL: ${{ secrets.ZAP_TARGET_URL }}
+        run: |
+          echo "Starting DAST scan on target: $ZAP_TARGET_URL"
+          docker run -t ghcr.io/zaproxy/zaproxy:stable \
+          zap-baseline.py -t $ZAP_TARGET_URL -r zap_report.html
+
+      - name: Upload ZAP Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZAP-DAST-Report
+          path: zap_report.html
+          retention-days: 5
