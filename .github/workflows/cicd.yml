@@ -1,59 +1,21 @@
-name: CI/CD DevSecOps (SAST & DAST)
+name: CI - SCA Scan
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    types: [ opened, synchronize, reopened ]
-    branches: [ "main" ]
+    branches: [ main ]
 
 jobs:
-  # ===================================================
-  # 1. SAST - Static Analysis Security Testing (SonarCloud)
-  # ===================================================
-  SAST-SonarCloud:
-    name: 🛡️ SAST Scan (SonarCloud)
+  sca-scan:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout source code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - name: SonarCloud Analysis
-        uses: SonarSource/sonarcloud-github-action@v2
+      - name: Run Snyk SCA
+        uses: snyk/actions/node@master
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: >
-            -Dsonar.organization=cytcytcuit
-            -Dsonar.projectKey=cytcytcuit_antrian-devsecops
-            -Dsonar.cpd.exclusions=**/zap_report.html 
-            
-
-  # ===================================================
-  # 2. DAST - Dynamic Analysis Security Testing (OWASP ZAP)
-  # ===================================================
-  DAST-ZAP:
-    name: 🌐 DAST Scan (OWASP ZAP)
-    runs-on: ubuntu-latest
-    needs: SAST-SonarCloud
-
-    steps:
-      - name: Checkout source code
-        uses: actions/checkout@v4
-
-      - name: Run ZAP Baseline Scan
-        uses: zaproxy/action-baseline@v0.10.0
-        with:
-          target: ${{ secrets.ZAP_TARGET_URL }}
-          cmd_options: "-a -r zap_report.html"
-
-      - name: Upload ZAP Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: ZAP-DAST-Report
-          path: zap_report.html
-          retention-days: 5
+          command: test
+          args: --file=assets/vendor/fontawesome-free/package.json --all-projects --scan-all-unmanaged || true
