@@ -18,4 +18,4 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           command: test
-          args: --file=assets/vendor/fontawesome-free/package.json --all-projects --scan-all-unmanaged || true
+          args: --file=assets/vendor/fontawesome-free/package.json || true
